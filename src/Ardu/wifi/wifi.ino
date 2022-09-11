@@ -216,14 +216,17 @@ void setup() {
 
 void loop() {
   //Get the current time
-  Serial.println("Sending:AT+TIME");
-  WiFiSerial.println("AT+TIME");
+//  Serial.println("Sending:AT+TIME");
+  Serial.println("AT+NWHTC=http://54.166.105.47:9999/t,get");
+  WiFiSerial.println("AT+NWHTC=http://54.166.105.47:9999/t?temp=32.0&hb=72,get");
 
   while(WiFiSerial.available())
   {
     Serial.print(char(WiFiSerial.read()));
     delay(1);
   }
+  
 
-  delay(1000);
+  delay(5000);
 }
+
