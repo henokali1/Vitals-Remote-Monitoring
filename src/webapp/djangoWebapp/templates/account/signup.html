@@ -1,7 +1,24 @@
-<!-- templates/account/signup.html -->
-<h2>Sign Up</h2>
+{% extends 'pages/base.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block body %}
+
+  
+<!-- templates/account/login.html -->
 <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Sign Up</button>
+  <section class="section section-login">
+    <div class="container">
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l6 offset-l3">
+          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h2>Sign Up</h2>
+            {% csrf_token %}
+            {{ form.as_p }}
+              <button class="btn btn-large btn-extended black-text z-depth-4" type="submit">Sign Up</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </form>
+{% endblock %}

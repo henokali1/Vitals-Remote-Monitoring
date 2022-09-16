@@ -1,7 +1,33 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block body %}
+<!-- templates/home.html -->
+{% if user.is_authenticated %}
+  Hi {{ user.email }}!
+  <p><a href="{% url 'account_logout' %}">Log Out</a></p>
+{% else %}
 <!-- templates/account/login.html -->
-<h2>Log In</h2>
 <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log In</button>
+  <section class="section section-login">
+    <div class="container">
+
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l6 offset-l3">
+          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h2>Login</h2>
+              {% csrf_token %}
+              {{ form.as_p }}
+              <button class="btn btn-large btn-extended black-text z-depth-4" type="submit">Log In</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
 </form>
+
+{% endif %}
+
+{% endblock %}
