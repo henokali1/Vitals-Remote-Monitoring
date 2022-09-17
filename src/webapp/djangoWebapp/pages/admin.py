@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import *
+
+admin.site.site_header = 'SYS Administration'
+admin.site.site_title = "Admin Portal"
+
+
+admin.site.register(SensorData)

@@ -9,8 +9,9 @@
     <div class="row">
       <div class="col s12 m8 offset-m2 l6 offset-l3">
         <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
-          <h1>Live</h1>
-          <img width="52px" src="{% static 'pages/imgs/heart-beat-logo.png' %}"/>
+          <h2 class="center green-text">Live Data</h2>
+          <img width="52px" src="{% static 'pages/imgs/heart-beat-logo.png' %}"/> <span id="heart_rate" style="font-size: 50px; padding-left: 20px;"><strong>72 bpm</strong></span><br>
+          <img width="52px" src="{% static 'pages/imgs/temp-logo.png' %}"/> <span id="body_temp" style="font-size: 50px; padding-left: 20px;"><strong>37 °C</strong></span>
         </div>
       </div>
     </div>
@@ -30,4 +31,21 @@
     </div>
   </section>
 {% endif %}
+
+<script>
+  lattest_data_url = '/live'
+  function executeQuery() {
+    $.getJSON( lattest_data_url, function(data) {
+            // console.log(data)
+            document.getElementById('heart_rate').innerText = `${data['heart_rate']} bpm`
+            document.getElementById('body_temp').innerText = `${data['body_temp']}°C`
+        })
+    setTimeout(executeQuery, 1000); // you could choose not to continue on failure...
+  }
+  
+  $(document).ready(function() {
+  // run the first time; all subsequent calls will take care of themselves
+  setTimeout(executeQuery, 1000);
+  });
+</script>
 {% endblock %}
