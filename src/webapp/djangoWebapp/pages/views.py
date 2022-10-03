@@ -33,5 +33,11 @@ def update_live(request):
 
     return JsonResponse(request.GET)
 
+def vid(request):
+	return render(request, 'pages/vid.html')
+
 def l(request):
     return HttpResponse("return this string")
+
+def tst(request):
+	return render(request, 'pages/tst.html')
