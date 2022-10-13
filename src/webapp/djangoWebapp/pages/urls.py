@@ -10,4 +10,7 @@ urlpatterns = [
     path('update_live/', views.update_live, name='live.html'),
     path('vid/', views.vid, name='vid.html'),
     path('tst/', views.tst, name='tst.html'),
+    path('save_ip/', views.save_ip, name='tst.html'),
+    path('get_ip/', views.get_ip, name='ip.html'),
+    path('ip/', views.ip, name='ip.html'),
 ]

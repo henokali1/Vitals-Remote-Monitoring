@@ -1,0 +1,75 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+{% block title %}IPV4{% endblock %}
+{% block body %}
+<!-- templates/home.html -->
+{% if user.is_authenticated %}
+<section class="section section-live-data">
+  <div class="container">
+    <div class="row">
+      <div class="col s12 m8 offset-m2 l6 offset-l3">
+        <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h4 class="center"><b>Raspberry Pi IP Address</b></h4>
+            <h5><b><span style="color: green;" id="stat">Connecting...</span></b></h5>
+            <h5>IP: <b><span id="ip">-</span></b></h5>
+            <h6>Last Seen: <b><span id="dt">-</span></b></h6>
+            <h4><a id="cpy"  onclick="copy_ip()" class="btn">Copy IP</a></h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+    cp_ip = ""
+    lattest_data_url = '/get_ip'
+    function executeQuery() {
+      $.getJSON( lattest_data_url, function(data) {
+              console.log(data)
+              dt = new Date(data['ts']*1000).toLocaleString();
+            if(data['ip_exp']){
+                document.getElementById('stat').innerText = `Device Offline`
+                document.getElementById('stat').style.color = 'red'
+                document.getElementById('ip').innerText = `${data['ip']}`
+                document.getElementById('dt').innerText = `${dt}`
+            } else {
+                document.getElementById('stat').innerText = ``
+                document.getElementById('ip').innerText = `${data['ip']}`
+                document.getElementById('dt').innerText = `${dt}`
+            }
+          })
+      setTimeout(executeQuery, 1000); // you could choose not to continue on failure...
+    }
+    
+    $(document).ready(function() {
+    // run the first time; all subsequent calls will take care of themselves
+    setTimeout(executeQuery, 1000);
+    });
+    
+function copy_ip() {
+    var copyText = document.getElementById("ip");
+    var textArea = document.createElement("textarea");
+    textArea.value = copyText.textContent;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("Copy");
+    textArea.remove();
+    M.toast({html: "IP Copied"})
+}
+</script>
+{% else %}
+  <section class="section section-login">
+    <div class="container center">
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l6 offset-l3">
+          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h2 class="center">Remote Monitoring of Vital Signs</h2>
+            <h2><a class="btn" href="{% url 'account_login' %}">Log In</a> | <a class="btn" href="{% url 'account_signup' %}">Sign Up</a></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% endblock %}

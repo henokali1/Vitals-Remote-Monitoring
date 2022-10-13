@@ -15,6 +15,9 @@ import random
 from django.http import HttpResponse
 
 
+ip_exp_sec = 60
+
+
 class HomePageView(TemplateView):
     template_name = 'home.html'
 
@@ -40,4 +43,27 @@ def l(request):
     return HttpResponse("return this string")
 
 def tst(request):
-	return render(request, 'pages/tst.html')
+    return render(request, 'pages/tst.html')
+
+def save_ip(request):
+    ip = request.GET["ip"]
+    Ip.objects.filter(id=1).update(
+        ip=ip,
+        ts = f'{int(time())}'
+    )
+    print(f"{ip}")
+    return HttpResponse(f"{ip}")
+
+def get_ip(request):
+    d = Ip.objects.all()[0]
+    current_ts = int(time())
+    last_ts = int(d.ts)
+    ts_diff = current_ts - last_ts
+    ip_exp = ts_diff > ip_exp_sec
+    args = {'ip': d.ip, 'ts': d.ts, 'ip_exp': ip_exp}
+    return JsonResponse(args)
+
+def ip(request):
+    d = Ip.objects.all()[0]
+    args = {'ip': d.ip, 'ts': d.ts}
+    return render(request, 'pages/ip.html', args)

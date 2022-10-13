@@ -21,6 +21,8 @@
           <a href="/" class="brand-logo" style="padding-left: 20px;">Home</a>
           <ul id="nav-mobile" class="right hide-on-med-and-down">
             {% if user.is_authenticated %}
+            <li><a href="/">Live Data</a></li>
+            <li><a href="/ip">IPV4</a></li>
             <li><a href="/vid">Live Video</a></li>
             <li><a href="{% url 'account_logout' %}">Log Out</a></li>
             {% endif %}
