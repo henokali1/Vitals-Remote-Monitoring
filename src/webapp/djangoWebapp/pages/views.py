@@ -32,10 +32,13 @@ def live(request):
 def update_live(request):
     heart_rate = request.GET["heart_rate"]
     body_temp = request.GET["body_temp"]
+    ecg = request.GET["ecg"]
+    ecg_connected = ecg != "!"
+    print(ecg, ecg_connected)
     ts = int(time())
 
     # to_update = TestModel.objects.filter(id=2).update(name='updated_name', key=new_key)
-    SensorData.objects.filter(id=1).update(heart_rate=heart_rate, body_temp=body_temp, ts=ts)
+    SensorData.objects.filter(id=1).update(heart_rate=heart_rate, body_temp=body_temp, ecg_connected=ecg_connected, ts=ts)
 
     return JsonResponse(request.GET)
 
