@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Home{% endblock %}
 {% block body %}
+{{connected}}
 <!-- templates/home.html -->
 {% if user.is_authenticated %}
 <section class="section section-live-data">
@@ -17,6 +18,8 @@
     </div>
   </div>
 </section>
+
+<div id="chartContainer" style="display: none; height: 300px; max-width: 920px; margin: 0px auto;"></div>
 {% else %}
   <section class="section section-login">
     <div class="container center">
@@ -30,15 +33,23 @@
       </div>
     </div>
   </section>
+
 {% endif %}
+
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
 <script>
   lattest_data_url = '/live'
   function executeQuery() {
     $.getJSON( lattest_data_url, function(data) {
-            // console.log(data)
-            document.getElementById('heart_rate').innerText = `${data['heart_rate']} bpm`
-            document.getElementById('body_temp').innerText = `${data['body_temp']}°C`
+            document.getElementById('heart_rate').innerText = `${data['heart_rate']} bpm`;
+            document.getElementById('body_temp').innerText = `${data['body_temp']}°C`;
+            if(data['ecg_connected']){
+              document.getElementById('chartContainer').style.display = 'block';
+            } else {
+              document.getElementById('chartContainer').style.display = 'none';
+            }
+            
         })
     setTimeout(executeQuery, 1000); // you could choose not to continue on failure...
   }
@@ -48,4 +59,72 @@
   setTimeout(executeQuery, 1000);
   });
 </script>
+
+<script>
+  var dps = []; // dataPoints
+            var instance = (new Date()).getTime();
+            var chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "ECG"
+                },
+                
+                axisX: {
+                    title: "",
+                    // valueFormatString: "hh:mm:ss"
+                },
+
+                axisY: {
+                    title: "ECG",
+                    minimum: 86,
+                    maximum: 650
+                },
+                data: [{
+                    type: "spline",
+                    // xValueType: "dateTime",
+                    dataPoints: dps
+                }]
+            });
+
+            raw_ecg = `{{ecg}}`.split(',')
+            yVal = []
+            for (let idx = 0; idx < raw_ecg.length; idx++) {
+              yVal.push(parseInt(raw_ecg[idx]));
+            }
+            var updateInterval = 10;
+            // var maxDataLength = yVal.length; // number of dataPoints after which the series shifts
+            var maxDataLength =200; // number of dataPoints after which the series shifts
+            var time = new Date();
+            var updateCount = 0;
+
+            var updateChart = function (count) {
+
+                count = count || 1;
+
+                for (var j = 0; j < count; j++) {
+                    time.setSeconds(time.getSeconds() + 1);
+
+                    dps.push({
+                        x: time.getTime(),
+                        y: yVal[updateCount % yVal.length]
+                    });
+
+                    updateCount++;
+
+                    if (dps.length > maxDataLength) {
+                        dps.shift();
+                    }
+                }
+                
+
+                chart.render();
+
+            };
+
+            // generates first set of dataPoints
+            updateChart(maxDataLength);
+
+            // update chart after specified time.
+            setInterval(function () { updateChart();}, updateInterval);
+</script>
+
 {% endblock %}

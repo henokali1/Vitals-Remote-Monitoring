@@ -20,10 +20,13 @@ ip_exp_sec = 60
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
+    def get_context_data(self, **kwargs):
+        d = SensorData.objects.all()[0]
+        return {"ecg": d.ecg}
 
 def live(request):
     d = SensorData.objects.all()[0]
-    args = {'heart_rate': d.heart_rate, 'body_temp': d.body_temp, 'date': d.date, 'ts': d.ts}
+    args = {'heart_rate': d.heart_rate, 'body_temp': d.body_temp, 'date': d.date, 'ts': d.ts, 'ecg': d.ecg, 'ecg_connected': d.ecg_connected}
     return JsonResponse(args)
 
 def update_live(request):
@@ -43,7 +46,9 @@ def l(request):
     return HttpResponse("return this string")
 
 def tst(request):
-    return render(request, 'pages/tst.html')
+    d = SensorData.objects.all()[0]
+    args = {'ecg': d.ecg,'t': 'adfadfad'}
+    return render(request, 'pages/tst.html', args)
 
 def save_ip(request):
     ip = request.GET["ip"]

@@ -1,3 +1,5 @@
+from email.policy import default
+from pyexpat import model
 from unittest.util import _MAX_LENGTH
 from django.db import models
 from time import time
@@ -12,6 +14,8 @@ class SensorData(models.Model):
     body_temp = models.FloatField(default=0.0)
     date = DateTimeField(default=timezone.now)
     ts = models.IntegerField(default=int(time()))
+    ecg = models.TextField(default="")
+    ecg_connected = models.BooleanField(default=False)
 
     def __str__(self):
         r = f'Date: {self.date} heart_rate: {self.heart_rate} - body_temp: {self.body_temp}'

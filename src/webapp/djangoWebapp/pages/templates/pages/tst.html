@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Home{% endblock %}
 {% block body %}
+
 <!-- templates/home.html -->
 {% if user.is_authenticated %}
 <section class="section section-live-data">
@@ -32,6 +33,7 @@
       </div>
     </div>
   </section>
+
 {% endif %}
 
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
@@ -54,47 +56,70 @@
 </script>
 
 <script>
-    window.onload = function () {
-    
-    var dps = []; // dataPoints
-    var chart = new CanvasJS.Chart("chartContainer", {
-        title :{
-            text: "ECG Data"
-        },
-        data: [{
-            type: "line",
-            dataPoints: dps
-        }]
-    });
-    
-    var xVal = 0;
-    var yVal = 100; 
-    var updateInterval = 100;
-    var dataLength = 20; // number of dataPoints visible at any point
-    
-    var updateChart = function (count) {
-    
-        count = count || 1;
-    
-        for (var j = 0; j < count; j++) {
-            yVal = yVal +  Math.round(5 + Math.random() *(-5-5));
-            dps.push({
-                x: xVal,
-                y: yVal
-            });
-            xVal++;
-        }
-    
-        if (dps.length > dataLength) {
-            dps.shift();
-        }
-    
-        chart.render();
-    };
+  var dps = []; // dataPoints
+            var instance = (new Date()).getTime();
+            var chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "ECG"
+                },
+                
+                axisX: {
+                    title: "",
+                    // valueFormatString: "hh:mm:ss"
+                },
 
-    updateChart(dataLength);
-    setInterval(function(){updateChart()}, updateInterval);
-    
-    }
-    </script>
+                axisY: {
+                    title: "ECG",
+                    minimum: 86,
+                    maximum: 650
+                },
+                data: [{
+                    type: "spline",
+                    // xValueType: "dateTime",
+                    dataPoints: dps
+                }]
+            });
+
+            raw_ecg = `{{ecg}}`.split(',')
+            yVal = []
+            for (let idx = 0; idx < raw_ecg.length; idx++) {
+              yVal.push(parseInt(raw_ecg[idx]));
+            }
+            var updateInterval = 10;
+            // var maxDataLength = yVal.length; // number of dataPoints after which the series shifts
+            var maxDataLength =200; // number of dataPoints after which the series shifts
+            var time = new Date();
+            var updateCount = 0;
+
+            var updateChart = function (count) {
+
+                count = count || 1;
+
+                for (var j = 0; j < count; j++) {
+                    time.setSeconds(time.getSeconds() + 1);
+
+                    dps.push({
+                        x: time.getTime(),
+                        y: yVal[updateCount % yVal.length]
+                    });
+
+                    updateCount++;
+
+                    if (dps.length > maxDataLength) {
+                        dps.shift();
+                    }
+                }
+                
+
+                chart.render();
+
+            };
+
+            // generates first set of dataPoints
+            updateChart(maxDataLength);
+
+            // update chart after specified time.
+            setInterval(function () { updateChart();}, updateInterval);
+</script>
+
 {% endblock %}
