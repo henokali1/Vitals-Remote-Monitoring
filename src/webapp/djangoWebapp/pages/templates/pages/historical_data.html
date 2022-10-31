@@ -1,0 +1,86 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block body %}
+
+{% if user.is_authenticated %}
+  <div class="container">
+    <div class="card">
+      <div class="container"><br><br><br>
+        <h4 class="center">Historical Data</h4>
+        <input type="text" id="searchInput" onkeyup="searchFilter()" placeholder="🗓️ Filter by date..." title="Type in a date here">
+          
+        <table id="historicalDataTable" class="striped">
+          <tr class="header">
+            <th class="center" style="width:14%;">Date / Time</th>
+            <th class="center" style="width:14%;">Heart Rate (BPM)</th>
+            <th class="center" style="width:14%;">Body Temperature  (°C)</th>
+          </tr>
+          {% for i in data %}
+            <tr>
+              <td class="center tm">{{i.ts}}</td>
+              <td class="center int">{{i.heart_rate}}</td>
+              <td class="center int">{{i.body_temp}}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <br><br><br>
+    </div>
+  </div>
+
+
+  <script>
+    function searchFilter() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("searchInput");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("historicalDataTable");
+      tr = table.getElementsByTagName("tr");
+      for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }       
+      }
+    }
+    </script>
+
+    <script defer>
+      $(document).ready(function() {
+        // run the first time; all subsequent calls will take care of themselves
+        tms = document.getElementsByClassName('tm')
+        for (let i = 0; i < tms.length; i++) {
+            val = new Date(parseInt(tms[i].innerText)*1000).toLocaleString()
+            tms[i].innerText = `${val}`
+          }
+        });
+
+        elements = document.getElementsByClassName('int')
+        for (let i=0; i < elements.length; i++){
+          element = elements[i]
+          element.innerText = element.innerText.replace('.0','')
+        }
+    </script>
+{% else %}
+  <section class="section section-login">
+    <div class="container center">
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l6 offset-l3">
+          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h2 class="center">Remote Monitoring of Vital Signs</h2>
+            <h2><a class="btn" href="{% url 'account_login' %}">Log In</a> | <a class="btn" href="{% url 'account_signup' %}">Sign Up</a></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endif %}
+
+{% endblock %}

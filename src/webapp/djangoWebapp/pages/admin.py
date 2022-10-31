@@ -8,3 +8,4 @@ admin.site.site_title = "Admin Portal"
 
 admin.site.register(SensorData)
 admin.site.register(Ip)
+admin.site.register(HistoricalData)

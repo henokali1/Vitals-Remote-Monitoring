@@ -2,17 +2,28 @@
 {% load static %}
 {% block title %}Home{% endblock %}
 {% block body %}
-{{connected}}
 <!-- templates/home.html -->
 {% if user.is_authenticated %}
+<div class="switch right" style="margin: 1rem;">
+  <label>
+    Disable Sound Alerts
+    <input type="checkbox" id="alert_selector">
+    <span class="lever"></span>
+    Enable Sound Alerts
+  </label>
+</div>
+<audio id="myAudio">
+  <source src="/static/pages/audio/siren.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 <section class="section section-live-data">
   <div class="container">
     <div class="row">
       <div class="col s12 m8 offset-m2 l6 offset-l3">
-        <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+        <div id="live_card" class="card-panel gray lighten-3 grey-text text-darken-4 z-depth-4">
           <h2 class="center green-text">Live Data</h2>
-          <img width="52px" src="{% static 'pages/imgs/heart-beat-logo.png' %}"/> <span id="heart_rate" style="font-size: 50px; padding-left: 20px;"><strong>72 bpm</strong></span><br>
-          <img width="52px" src="{% static 'pages/imgs/temp-logo.png' %}"/> <span id="body_temp" style="font-size: 50px; padding-left: 20px;"><strong>37 °C</strong></span>
+          <img width="52px" src="{% static 'pages/imgs/heart-beat-logo.png' %}"/> <span id="heart_rate" style="font-size: 50px; padding-left: 20px;"><strong>-</strong></span><br>
+          <img width="52px" src="{% static 'pages/imgs/temp-logo.png' %}"/> <span id="body_temp" style="font-size: 50px; padding-left: 20px;"><strong>-</strong></span>
         </div>
       </div>
     </div>
@@ -20,37 +31,62 @@
 </section>
 
 <div id="chartContainer" style="display: none; height: 300px; max-width: 920px; margin: 0px auto;"></div>
-{% else %}
-  <section class="section section-login">
-    <div class="container center">
-      <div class="row">
-        <div class="col s12 m8 offset-m2 l6 offset-l3">
-          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
-            <h2 class="center">Remote Monitoring of Vital Signs</h2>
-            <h2><a class="btn" href="{% url 'account_login' %}">Log In</a> | <a class="btn" href="{% url 'account_signup' %}">Sign Up</a></h2>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-{% endif %}
+
 
 <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
+
+<script>
+  alert_selector = document.getElementById('alert_selector')
+  var x = document.getElementById("myAudio"); 
+  function playAudio() { 
+
+    if(alert_selector.checked){
+      x.play(); 
+    }
+  } 
+  
+  function pauseAudio() { 
+    if(alert_selector.checked){
+      x.pause(); 
+    }
+  } 
+  </script>
+
 <script>
   lattest_data_url = '/live'
+  live_card = document.getElementById('live_card')
   function executeQuery() {
     $.getJSON( lattest_data_url, function(data) {
-            document.getElementById('heart_rate').innerText = `${data['heart_rate']} bpm`;
-            document.getElementById('body_temp').innerText = `${data['body_temp']}°C`;
-            if(data['ecg_connected']){
-              document.getElementById('chartContainer').style.display = 'block';
-            } else {
-              document.getElementById('chartContainer').style.display = 'none';
-            }
-            
-        })
+      current_ts = Math.floor(Date.now() / 1000)
+      data_ts = parseInt(data['ts'])
+      ts_df = current_ts - data_ts
+      data_expired = ts_df > 75
+      // console.log(ts_df)
+      if(data_expired){
+        document.getElementById('heart_rate').innerText = `-`;
+        document.getElementById('body_temp').innerText = `-`;
+        pauseAudio()
+      } else{
+        document.getElementById('heart_rate').innerText = `${data['heart_rate']} bpm`;
+        document.getElementById('body_temp').innerText = `${data['body_temp']}°C`;
+        if(data['alert']){
+          playAudio()
+          live_card.classList.remove("gray");
+          live_card.classList.add("red");
+        } else {
+          pauseAudio()
+          live_card.classList.remove("red");
+          live_card.classList.add("gray");
+        }
+        if(data['ecg_connected']){
+          document.getElementById('chartContainer').style.display = 'block';
+        } else {
+          document.getElementById('chartContainer').style.display = 'none';
+        }
+      }
+})
     setTimeout(executeQuery, 1000); // you could choose not to continue on failure...
   }
   
@@ -126,5 +162,20 @@
             // update chart after specified time.
             setInterval(function () { updateChart();}, updateInterval);
 </script>
+{% else %}
+  <section class="section section-login">
+    <div class="container center">
+      <div class="row">
+        <div class="col s12 m8 offset-m2 l6 offset-l3">
+          <div class="card-panel grey lighten-4 grey-text text-darken-4 z-depth-4">
+            <h2 class="center">Remote Monitoring of Vital Signs</h2>
+            <h2><a class="btn" href="{% url 'account_login' %}">Log In</a> | <a class="btn" href="{% url 'account_signup' %}">Sign Up</a></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endif %}
 
 {% endblock %}

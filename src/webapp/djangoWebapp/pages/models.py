@@ -1,5 +1,6 @@
 from email.policy import default
 from pyexpat import model
+from sys import maxsize
 from unittest.util import _MAX_LENGTH
 from django.db import models
 from time import time
@@ -27,4 +28,16 @@ class Ip(models.Model):
     ts = models.IntegerField(default=int(time()))
     def __str__(self):
         r = f'IP - {self.ip}'
+        return r
+
+# Historical Data
+class HistoricalData(models.Model):
+    heart_rate = models.FloatField(default=0.0)
+    body_temp = models.FloatField(default=0.0)
+    date = DateTimeField(default=timezone.now)
+    ts = models.IntegerField(default=int(time()))
+    patient_id = models.IntegerField(default=0)
+
+    def __str__(self):
+        r = f'PK: {self.pk} - Patient ID: {self.patient_id} Date: {self.date} heart_rate: {self.heart_rate} - body_temp: {self.body_temp}'
         return r
