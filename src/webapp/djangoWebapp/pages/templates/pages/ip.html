@@ -25,7 +25,7 @@
     lattest_data_url = '/get_ip'
     function executeQuery() {
       $.getJSON( lattest_data_url, function(data) {
-              console.log(data)
+              // console.log(data)
               dt = new Date(data['ts']*1000).toLocaleString();
             if(data['ip_exp']){
                 document.getElementById('stat').innerText = `Device Offline`

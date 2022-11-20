@@ -6,67 +6,137 @@
 {% if user.is_authenticated %}
   <div class="container">
     <div class="card">
+      <br><br>
+      <div class="row" style="padding-left: 2rem;">
+        <div class="col s5">
+          <div class="input-field">
+            <input type=text name="from_date" id="start_date" class="datepicker">
+            <label for="start_date">From</label>
+          </div>
+        </div>
+        <div class="col s5">
+          <div class="input-field">
+            <input type=text name="to_date" id="end_date" class="datepicker">
+            <label for="end_date">To</label>
+          </div>
+        </div>
+        <div class="col s2">
+          <button style="margin-top: 1.5rem;" class="btn" onclick="date_filter()">Search</button>
+        </div>
+      </div>
+
       <div class="container"><br><br><br>
-        <h4 class="center">Historical Data</h4>
-        <input type="text" id="searchInput" onkeyup="searchFilter()" placeholder="🗓️ Filter by date..." title="Type in a date here">
-          
-        <table id="historicalDataTable" class="striped">
-          <tr class="header">
-            <th class="center" style="width:14%;">Date / Time</th>
-            <th class="center" style="width:14%;">Heart Rate (BPM)</th>
-            <th class="center" style="width:14%;">Body Temperature  (°C)</th>
-          </tr>
-          {% for i in data %}
-            <tr>
-              <td class="center tm">{{i.ts}}</td>
-              <td class="center int">{{i.heart_rate}}</td>
-              <td class="center int">{{i.body_temp}}</td>
-            </tr>
-          {% endfor %}
-        </table>
+
+        
+
+<script>
+window.onload = function () {
+  
+  sensor_dataPoints = []
+  hr_dps = []
+  raw_sensor_data = {{sensor_data}}
+  sensor = `{{d}}`
+
+
+  for (let index = 0; index < raw_sensor_data.length; index++) {
+    sensor_dataPoints.push({ x: raw_sensor_data[index][0], y: raw_sensor_data[index][1] })
+  }
+
+  
+  if(sensor == 'btemp'){
+    chart_title = "Body Temperature Historical Data"
+    axisY2_title = "Body Temperature (°C)"
+    data_name = "Body Temperature"
+    data_yValueFormatString = "##.## °C"
+  } else {
+    chart_title = "Heartbeat Rate Historical Data"
+    axisY2_title = "Heartbeat Rate (BPM)"
+    data_name = "Heartbeat Rate"
+    data_yValueFormatString = "# BPM"
+  }
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	title: {
+		text: chart_title
+	},
+	axisX: {
+		valueFormatString: "MMM YYYY"
+	},
+	axisY2: {
+		title: axisY2_title,
+	},
+	toolTip: {
+		shared: true
+	},
+	legend: {
+		cursor: "pointer",
+		verticalAlign: "top",
+		horizontalAlign: "center",
+		dockInsidePlotArea: true,
+		itemclick: toogleDataSeries
+	},
+	data: [{
+		type:"line",
+		axisYType: "secondary",
+		name: data_name,
+		showInLegend: true,
+		markerSize: 0,
+    xValueType: "dateTime",
+    xValueFormatString: "DD MMM hh:mm TT",
+		yValueFormatString: data_yValueFormatString,
+		dataPoints: sensor_dataPoints
+	}]
+});
+chart.render();
+
+function toogleDataSeries(e){
+	if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+		e.dataSeries.visible = false;
+	} else{
+		e.dataSeries.visible = true;
+	}
+	chart.render();
+  document.getElementsByClassName('canvasjs-chart-credit')[0].style.visibility = "hidden";
+}
+
+}
+
+
+</script>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+
+<br>
+<a href="?d=btemp&sd=-&ed=-" class="left btn">Body Temperature</a>
+<a href="?d=hr&sd=-&ed=-" class="right btn">Heartbeat Rate</a>
+        
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+<script>
+  
+  $(document).ready(function(){
+    $('.datepicker').datepicker(
+      {format: 'dd-mm-yyyy'}
+    );
+  });
+</script>
+
+<script>
+  function date_filter(){
+    start_raw = document.getElementById('start_date').value
+    end_raw = document.getElementById('end_date').value
+    if ((start_raw == "") || (end_raw == "")){
+      alert("Please fill the date range")
+    } else {
+      url = `http://54.166.105.47:9999/historical_data/?d=${sensor}&sd=${start_raw}&ed=${end_raw}`
+      window.open(url,"_self")
+    }
+  }
+</script>
       </div>
       <br><br><br>
     </div>
   </div>
 
-
-  <script>
-    function searchFilter() {
-      var input, filter, table, tr, td, i, txtValue;
-      input = document.getElementById("searchInput");
-      filter = input.value.toUpperCase();
-      table = document.getElementById("historicalDataTable");
-      tr = table.getElementsByTagName("tr");
-      for (i = 0; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td")[0];
-        if (td) {
-          txtValue = td.textContent || td.innerText;
-          if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        }       
-      }
-    }
-    </script>
-
-    <script defer>
-      $(document).ready(function() {
-        // run the first time; all subsequent calls will take care of themselves
-        tms = document.getElementsByClassName('tm')
-        for (let i = 0; i < tms.length; i++) {
-            val = new Date(parseInt(tms[i].innerText)*1000).toLocaleString()
-            tms[i].innerText = `${val}`
-          }
-        });
-
-        elements = document.getElementsByClassName('int')
-        for (let i=0; i < elements.length; i++){
-          element = elements[i]
-          element.innerText = element.innerText.replace('.0','')
-        }
-    </script>
 {% else %}
   <section class="section section-login">
     <div class="container center">

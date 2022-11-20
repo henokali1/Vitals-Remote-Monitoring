@@ -3,6 +3,7 @@ import serial.tools.list_ports
 import time
 import requests
 
+patient_id=1
 
 def get_serial_port():
     for i in serial.tools.list_ports.comports():
@@ -30,7 +31,7 @@ try:
                 tmp = sp[2]
                 ecg = sp[3]
                 print(f'Heart Rate: {hr}\t Body T: {tmp}\tECG: {ecg}')
-                url = f'http://54.166.105.47:9999/update_live/?heart_rate={hr}&body_temp={tmp}&ecg={ecg}'
+                url = f'http://54.166.105.47:9999/update_live/?heart_rate={hr}&body_temp={tmp}&ecg={ecg}&patient_id={patient_id}'
                 r = requests.get(url = url)
                 print(r)
             else:

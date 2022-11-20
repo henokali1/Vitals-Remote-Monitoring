@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from .models import *
 import ast
+from time import mktime as mktime
+# import time as tm
 from time import time
 import datetime
 from django.db.models import Sum
@@ -47,14 +49,14 @@ def update_live(request):
 
     # to_update = TestModel.objects.filter(id=2).update(name='updated_name', key=new_key)
     SensorData.objects.filter(id=1).update(heart_rate=heart_rate, body_temp=body_temp, ecg_connected=ecg_connected, ts=ts)
-    
-    # Save to HistoricalData
-    HistoricalData(
-        heart_rate=heart_rate,
-        body_temp = body_temp,
-        ts = int(time()),
-        patient_id = patient_id,
-    ).save()
+    if ((heart_rate != '0.0') or (body_temp != '0.0')):
+        # Save to HistoricalData
+        HistoricalData(
+            heart_rate=heart_rate,
+            body_temp = body_temp,
+            ts = int(time()),
+            patient_id = patient_id,
+        ).save()
 
     return JsonResponse(request.GET)
 
@@ -88,8 +90,34 @@ def ip(request):
     return render(request, 'pages/ip.html', args)
 
 def historical_data(request):
-    data = reversed(HistoricalData.objects.all())
-    args = {'data': data}
+    d = request.GET["d"]
+    start_raw = request.GET['sd']
+    end_raw = request.GET['ed']
+
+    sensor_data = []
+    if ((start_raw == '-') and (end_raw == '-')):
+        data = HistoricalData.objects.all()
+    else:
+        start_ts = int(mktime(datetime.datetime.strptime(start_raw, "%d-%m-%Y").timetuple()))
+        end_ts = int(mktime(datetime.datetime.strptime(end_raw, "%d-%m-%Y").timetuple()))
+        data = HistoricalData.objects.filter(ts__gte=start_ts, ts__lte=end_ts)
+        print(start_ts, end_ts)
+
+
+    if d == 'btemp':
+        for i in data:
+            if (i.body_temp != 0.0):
+                sensor_data.append([i.ts*1000, i.body_temp, i.heart_rate])
+    
+    if d == 'hr':
+        for i in data:
+            if (i.heart_rate != 0.0):
+                sensor_data.append([i.ts*1000, i.body_temp, i.heart_rate])
+
+    if (len(sensor_data) > 50) and (start_raw == '-'):
+        sensor_data = sensor_data[-50:]
+
+    args = {'sensor_data': json.dumps(sensor_data), 'd': d}
     return render(request, 'pages/historical_data.html', args)
 
 def tst(request):
